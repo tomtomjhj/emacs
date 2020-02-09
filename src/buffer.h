@@ -394,6 +394,9 @@ struct buffer
   /* Non-nil means to use word wrapping when displaying continuation lines.  */
   Lisp_Object word_wrap_;
 
+  /* Characters that may cause word wrapping.  */
+  Lisp_Object word_wrap_boundary_;
+
   /* Non-nil means display ctl chars with uparrow.  */
   Lisp_Object ctl_arrow_;
 

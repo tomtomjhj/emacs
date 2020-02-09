@@ -382,6 +382,11 @@ bset_word_wrap (struct buffer *b, Lisp_Object val)
   b->word_wrap_ = val;
 }
 static void
+bset_word_wrap_boundary (struct buffer *b, Lisp_Object val)
+{
+  b->word_wrap_boundary_ = val;
+}
+static void
 bset_zv_marker (struct buffer *b, Lisp_Object val)
 {
   b->zv_marker_ = val;
@@ -5200,6 +5205,7 @@ init_buffer_once (void)
   /* Make this one a permanent local.  */
   buffer_permanent_local_flags[idx++] = 1;
   XSETFASTINT (BVAR (&buffer_local_flags, word_wrap), idx); ++idx;
+  XSETFASTINT (BVAR (&buffer_local_flags, word_wrap_boundary), idx); ++idx;
   XSETFASTINT (BVAR (&buffer_local_flags, ctl_arrow), idx); ++idx;
   XSETFASTINT (BVAR (&buffer_local_flags, fill_column), idx); ++idx;
   XSETFASTINT (BVAR (&buffer_local_flags, left_margin), idx); ++idx;
@@ -5297,6 +5303,7 @@ init_buffer_once (void)
   XSETFASTINT (BVAR (&buffer_defaults, tab_width), 8);
   bset_truncate_lines (&buffer_defaults, Qnil);
   bset_word_wrap (&buffer_defaults, Qnil);
+  bset_word_wrap_boundary (&buffer_defaults, build_string (" \t"));
   bset_ctl_arrow (&buffer_defaults, Qt);
   bset_bidi_display_reordering (&buffer_defaults, Qt);
   bset_bidi_paragraph_direction (&buffer_defaults, Qnil);
@@ -5772,8 +5779,8 @@ Minibuffers set this variable to nil.  */);
 
   DEFVAR_PER_BUFFER ("word-wrap", &BVAR (current_buffer, word_wrap), Qnil,
 		     doc: /* Non-nil means to use word-wrapping for continuation lines.
-When word-wrapping is on, continuation lines are wrapped at the space
-or tab character nearest to the right window edge.
+When word-wrapping is on, continuation lines are wrapped at the character
+defined in `word-wrap-boundary` nearest to the right window edge.
 If nil, continuation lines are wrapped at the right screen edge.
 
 This variable has no effect if long lines are truncated (see
@@ -5787,6 +5794,11 @@ Visual Line mode.  Visual Line mode, when enabled, sets `word-wrap'
 to t, and additionally redefines simple editing commands to act on
 visual lines rather than logical lines.  See the documentation of
 `visual-line-mode'.  */);
+
+  DEFVAR_PER_BUFFER ("word-wrap-boundary",
+		     &BVAR (current_buffer, word_wrap_boundary), Qstringp,
+		     doc: /* Characters that may cause line wrapping when `word-wrap` is on.
+" \\t" initially. */);
 
   DEFVAR_PER_BUFFER ("default-directory", &BVAR (current_buffer, directory),
 		     Qstringp,

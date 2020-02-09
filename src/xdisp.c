@@ -493,11 +493,12 @@ static Lisp_Object list_of_error;
 #endif /* HAVE_WINDOW_SYSTEM */
 
 /* Test if the display element loaded in IT, or the underlying buffer
-   or string character, is a space or a TAB character.  This is used
-   to determine where word wrapping can occur.  */
+   or string character, is a word wrap boundary character.  */
 
-#define IT_DISPLAYING_WHITESPACE(it)					\
-  ((it->what == IT_CHARACTER && (it->c == ' ' || it->c == '\t'))	\
+#define IT_DISPLAYING_WORD_WRAP_BOUNDARY(it)				\
+  ((it->what == IT_CHARACTER						\
+    && strchr ((char *) SDATA (BVAR (current_buffer, word_wrap_boundary)), \
+		it->c))							\
    || ((STRINGP (it->string)						\
 	&& (SREF (it->string, IT_STRING_BYTEPOS (*it)) == ' '		\
 	    || SREF (it->string, IT_STRING_BYTEPOS (*it)) == '\t'))	\
@@ -9193,12 +9194,12 @@ move_it_in_display_line_to (struct it *it,
 	{
 	  if (it->line_wrap == WORD_WRAP && it->area == TEXT_AREA)
 	    {
-	      if (IT_DISPLAYING_WHITESPACE (it))
+	      if (IT_DISPLAYING_WORD_WRAP_BOUNDARY (it))
 		may_wrap = true;
 	      else if (may_wrap)
 		{
 		  /* We have reached a glyph that follows one or more
-		     whitespace characters.  If the position is
+		     boundary characters.  If the position is
 		     already found, we are done.  */
 		  if (atpos_it.sp >= 0)
 		    {
@@ -9343,10 +9344,10 @@ move_it_in_display_line_to (struct it *it,
 			    {
 			      bool can_wrap = true;
 
-			      /* If we are at a whitespace character
+			      /* If we are at a boundary character
 				 that barely fits on this screen line,
 				 but the next character is also
-				 whitespace, we cannot wrap here.  */
+				 boundary, we cannot wrap here.  */
 			      if (it->line_wrap == WORD_WRAP
 				  && wrap_it.sp >= 0
 				  && may_wrap
@@ -9358,13 +9359,13 @@ move_it_in_display_line_to (struct it *it,
 				  SAVE_IT (tem_it, *it, tem_data);
 				  set_iterator_to_next (it, true);
 				  if (get_next_display_element (it)
-				      && IT_DISPLAYING_WHITESPACE (it))
+				      && IT_DISPLAYING_WORD_WRAP_BOUNDARY (it))
 				    can_wrap = false;
 				  RESTORE_IT (it, &tem_it, tem_data);
 				}
 			      if (it->line_wrap != WORD_WRAP
 				  || wrap_it.sp < 0
-				  /* If we've just found whitespace
+				  /* If we've just found boundary
 				     where we can wrap, effectively
 				     ignore the previous wrap point --
 				     it is no longer relevant, but we
@@ -9437,19 +9438,19 @@ move_it_in_display_line_to (struct it *it,
 		  else
 		    IT_RESET_X_ASCENT_DESCENT (it);
 
-		  /* If the screen line ends with whitespace, and we
+		  /* If the screen line ends with boundary, and we
 		     are under word-wrap, don't use wrap_it: it is no
 		     longer relevant, but we won't have an opportunity
 		     to update it, since we are done with this screen
 		     line.  */
 		  if (may_wrap && IT_OVERFLOW_NEWLINE_INTO_FRINGE (it)
 		      /* If the character after the one which set the
-			 may_wrap flag is also whitespace, we can't
+			 may_wrap flag is also boundary, we can't
 			 wrap here, since the screen line cannot be
-			 wrapped in the middle of whitespace.
+			 wrapped in the middle of boundary.
 			 Therefore, wrap_it _is_ relevant in that
 			 case.  */
-		      && !(moved_forward && IT_DISPLAYING_WHITESPACE (it)))
+		      && !(moved_forward && IT_DISPLAYING_WORD_WRAP_BOUNDARY (it)))
 		    {
 		      /* If we've found TO_X, go back there, as we now
 			 know the last word fits on this screen line.  */
@@ -23322,7 +23323,7 @@ display_line (struct it *it, int cursor_vpos)
 
 	  if (it->line_wrap == WORD_WRAP && it->area == TEXT_AREA)
 	    {
-	      if (IT_DISPLAYING_WHITESPACE (it))
+	      if (IT_DISPLAYING_WORD_WRAP_BOUNDARY (it))
 		may_wrap = true;
 	      else if (may_wrap)
 		{
@@ -23467,10 +23468,10 @@ display_line (struct it *it, int cursor_vpos)
 			      /* Even if there is a previous wrap
 				 point, continue the line here as
 				 usual, if (i) the previous character
-				 was a space or tab AND (ii) the
-				 current character is not.  */
+				 was a boundary AND (ii) the current
+				 character is not.  */
 			      && (!may_wrap
-				  || IT_DISPLAYING_WHITESPACE (it)))
+				  || IT_DISPLAYING_WORD_WRAP_BOUNDARY (it)))
 			    goto back_to_wrap;
 
 			  /* Record the maximum and minimum buffer
@@ -23501,10 +23502,10 @@ display_line (struct it *it, int cursor_vpos)
 				       /* Even if there is a previous wrap
 					  point, continue the line here as
 					  usual, if (i) the previous character
-					  was a space or tab AND (ii) the
-					  current character is not.  */
+					  was a boundary AND (ii) the current
+					  character is not.  */
 				       && (!may_wrap
-					   || IT_DISPLAYING_WHITESPACE (it)))
+					   || IT_DISPLAYING_WORD_WRAP_BOUNDARY (it)))
 				goto back_to_wrap;
 
 			    }

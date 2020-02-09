@@ -91,6 +91,11 @@ specify 'cursor-type' to be '(box . SIZE)', the cursor becomes a hollow
 box if the point is on an image larger than 'SIZE' pixels in any
 dimension.
 
+** New option 'word-wrap-boundary'.
+This defines the characters that can be used as a wrapping boundary
+when 'word-wrap' is on. It defaults to " \t", the characters that had
+been hard-coded in the previous versions of Emacs.
+
 ---
 *** Improved language transliteration in Malayalam input methods.
 Added a new Mozhi scheme.  The inapplicable ITRANS scheme is now
